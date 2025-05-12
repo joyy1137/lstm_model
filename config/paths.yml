@@ -1,0 +1,29 @@
+main_folder: "/Users/fy324/desktop/lstm_modelll"
+
+directories:
+  model_dir: "{main_folder}/models"
+  plots_dir: "{main_folder}/plots"
+  predictions_dir: "{main_folder}/prediction"
+  feature_weights_dir: "{main_folder}/feature_weights"
+  
+
+files:
+  scaler_path: "{main_folder}/models/scaler.pkl"
+  model_path: "{main_folder}/models/xgb_best_model_cls.pkl"
+  all_pred_path: "{main_folder}/prediction/predictions_all.csv"
+  test_pred_path: "{main_folder}/prediction/test_predictions.csv"
+  acc_plot_path: "{main_folder}/plots/train_val_accuracy_curve.png"
+  backtesting_path: "{main_folder}/backtesting"
+ 
+signals:
+  current_signal: "model1" #回测文件夹命名
+
+data:
+  combine_path: "/Users/fy324/desktop/lstm_model/data/combine/*.csv"
+  raw_data_path: "/Users/fy324/desktop/lstm_model/data/raw_signal_data/*.csv"
+  index_return_path: "/Users/fy324/OneDrive/Data_prepared_test/data_timeSeries/index_return.csv"
+  chinese_valuation_date_path: "/Users/fy324/OneDrive/Data_prepared_test/data_other/chinese_valuation_date.xlsx"
+  output_path: "/Users/fy324/desktop/lstm_modelll/output"
+  log_dir: "/Users/fy324/desktop/lstm_modelll/logs"
+
+

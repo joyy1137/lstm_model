@@ -1,0 +1,43 @@
+features:
+  majority_window: 15
+  technical_indicators: 
+   
+  feature_selection:
+    discrete_features: 
+      - K0
+      - K1 
+      - K3
+      - K4
+      - K5
+      - K6
+      - K7
+      - K8
+      - K9
+      - K10
+      - K11
+      - K12
+      - K13
+      - K14
+      - K15
+      - K17
+      - K18
+      - K19
+      - K20
+      - K21
+      - K22
+      - K23
+      - K24
+      - K25
+    
+      
+    
+    real_features: 
+      - pca_1
+      - pca_2
+      - pca_3
+      - pca_4
+      - pca_5
+      - pca_6
+      
+   
+     
