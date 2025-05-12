@@ -126,7 +126,7 @@ def main():
             
             # 收集预测结果
             all_predictions.extend(y_test_pred)
-            all_test_dates.extend(range(len(y_test_pred)))  # 使用索引作为日期
+            all_test_dates.extend(dates[test_mask].values)  
             all_test_values.extend(y_test)
     
     # 绘制所有模型的准确率和损失曲线

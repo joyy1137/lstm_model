@@ -19,8 +19,8 @@ signals:
   current_signal: "model1" #回测文件夹命名
 
 data:
-  combine_path: "/Users/fy324/desktop/lstm_model/data/combine/*.csv"
-  raw_data_path: "/Users/fy324/desktop/lstm_model/data/raw_signal_data/*.csv"
+  combine_path: "/Users/fy324/desktop/lstm_modelll/data/combine/*.csv"
+  raw_data_path: "/Users/fy324/desktop/lstm_modelll/data/raw_signal_data/*.csv"
   index_return_path: "/Users/fy324/OneDrive/Data_prepared_test/data_timeSeries/index_return.csv"
   chinese_valuation_date_path: "/Users/fy324/OneDrive/Data_prepared_test/data_other/chinese_valuation_date.xlsx"
   output_path: "/Users/fy324/desktop/lstm_modelll/output"

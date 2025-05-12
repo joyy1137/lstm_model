@@ -25,7 +25,7 @@ model:
 
 # 数据参数
 data:
-  sequence_length: 60  # 用于时间序列预测的序列长度
+  sequence_length: 50  # 用于时间序列预测的序列长度
   batch_size: 64      # 默认批次大小
   random_state: 42    # 数据划分的随机种子
 
@@ -34,7 +34,7 @@ training:
   num_epochs: 100     # 最大训练轮数
   learning_rate: 0.001  # 基础学习率
   weight_decay: 0.0001  # L2正则化系数
-  patience: 50       # 早停耐心值
+  patience: 30       # 早停耐心值
   max_norm: 1.0       # 梯度裁剪的最大范数
 
 # 学习率调度器参数
@@ -53,25 +53,25 @@ augmentation:
 # 网格搜索参数
 param_grid:
   hidden_size:
-    mode: "fixed"  # 可选值: "fixed" 或 "grid"
+    mode: "grid"  # 可选值: "fixed" 或 "grid"
     values: [64, 128]  # 当 mode 为 "grid" 时使用
     fixed_value: 128  # 当 mode 为 "fixed" 时使用
   num_layers:
-    mode: "fixed"
+    mode: "grid"
     values: [1, 2]
     fixed_value: 2
   dropout:
-    mode: "fixed"
+    mode: "grid"
     values: [0.2, 0.3]
     fixed_value: 0.3
   learning_rate:
-    mode: "fixed"
-    values: [0.002]
+    mode: "grid"
+    values: [0.001, 0.002]
     fixed_value: 0.002
   batch_size:
-    mode: "fixed"
-    values: [64]
-    fixed_value: 64
+    mode: "grid"
+    values: [64,128]
+    fixed_value: 128
 
 # 训练和测试日期范围
 dates:

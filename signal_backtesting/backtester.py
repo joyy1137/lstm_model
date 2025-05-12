@@ -51,7 +51,7 @@ def run_backtesting(timestamp, y_test=None, y_test_pred=None, returns=None):
     backtest_data = pd.DataFrame({
         'valuation_date': returns.index,
         'prediction': y_test_pred,
-        'actual': y_test
+        
     })
     
     # 保存回测数据
