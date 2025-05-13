@@ -117,17 +117,23 @@ def main():
         # 进行预测
         model.eval()
         with torch.no_grad():
-            # 使用训练好的模型进行预测
-            model, _ = trainer.get_trained_model_and_scaler()
-            
             # 检查测试集是否为空
             if len(X_test) == 0:
                 continue
             
+            # 将测试数据移动到正确的设备上
             X_test_tensor = torch.FloatTensor(X_test).to(device)
-            y_test_pred = model(X_test_tensor).cpu().numpy()
+            y_test_tensor = torch.FloatTensor(y_test).to(device)
+            
+            # 使用训练好的模型进行预测
+            model, _ = trainer.get_trained_model_and_scaler()
+            model.to(device)  # 确保模型在正确的设备上
+            
+            y_test_pred = model(X_test_tensor)
+            y_test_pred = torch.sigmoid(y_test_pred)
+            y_test_pred = y_test_pred.cpu().numpy()
             y_test_pred = y_test_pred.reshape(-1)  # 确保是1维数组
-            y_test_pred = (y_test_pred > 0.5).astype(int)  # 将概率转换为0/1预测
+            y_test_pred = (y_test_pred > 0.5).astype(int)  
             
             # 收集预测结果
             all_predictions.extend(y_test_pred)
