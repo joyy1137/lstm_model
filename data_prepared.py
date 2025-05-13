@@ -97,29 +97,16 @@ class DataPrepared:
         # 分离特征和标签
         X = merged.drop(['zz_hs_diff', 'zz2000', 'hs300', 'sz50', 'zz500', 'zz1000', 'zzA500', 'gz2000'], axis=1)
         
-        # 分离连续特征和离散特征
-        continuous_features = X.select_dtypes(include=['float64', 'int64']).columns
-        discrete_features = X.select_dtypes(include=['object', 'category']).columns
-        
-        # 处理离散特征
-        if len(discrete_features) > 0:
-            # 对离散特征进行编码
-            X_discrete = pd.get_dummies(X[discrete_features])
-            X_continuous = X[continuous_features]
-            X = pd.concat([X_continuous, X_discrete], axis=1)
-        else:
-            X_discrete = None
-        
         # 创建序列数据
         sequence_length = Config.data['sequence_length']
         
-        # 首先创建特征序列
+        # 创建特征序列
         X_sequences, sequence_dates = DataPrepared.create_sequences(X, sequence_length)
         
-        # 然后获取对应的目标变量
+        # 获取对应的目标变量
         y_sequences = y.loc[sequence_dates]
         
-        return X_sequences, y_sequences, X_discrete, sequence_dates
+        return X_sequences, y_sequences, None, sequence_dates
 
 if __name__ == "__main__":
     dp=DataPrepared()

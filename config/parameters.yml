@@ -33,9 +33,9 @@ data:
 training:
   num_epochs: 100     # 最大训练轮数
   learning_rate: 0.001  # 基础学习率
-  weight_decay: 0.0001  # L2正则化系数
+  weight_decay: 0.001  # L2正则化系数
   patience: 30       # 早停耐心值
-  max_norm: 1.0       # 梯度裁剪的最大范数
+  max_norm: 3.0       # 梯度裁剪的最大范数
 
 # 学习率调度器参数
 scheduler:
@@ -53,25 +53,25 @@ augmentation:
 # 网格搜索参数
 param_grid:
   hidden_size:
-    mode: "grid"  # 可选值: "fixed" 或 "grid"
-    values: [64, 128]  # 当 mode 为 "grid" 时使用
+    mode: "fixed"  # 可选值: "fixed" 或 "grid"
+    values: [64, 128,256]  # 当 mode 为 "grid" 时使用
     fixed_value: 128  # 当 mode 为 "fixed" 时使用
   num_layers:
-    mode: "grid"
-    values: [1, 2]
+    mode: "fixed"
+    values: [1, 2,3]
     fixed_value: 2
   dropout:
-    mode: "grid"
-    values: [0.2, 0.3]
+    mode: "fixed"
+    values: [0.2, 0.3,0.4]
     fixed_value: 0.3
   learning_rate:
-    mode: "grid"
-    values: [0.001, 0.002]
+    mode: "fixed"
+    values: [0.0005, 0.001, 0.002]
     fixed_value: 0.002
   batch_size:
-    mode: "grid"
+    mode: "fixed"
     values: [64,128]
-    fixed_value: 128
+    fixed_value: 64
 
 # 训练和测试日期范围
 dates:
