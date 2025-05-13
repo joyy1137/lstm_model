@@ -12,6 +12,10 @@ import torch
 from data_prepared import DataPrepared
 from sklearn.model_selection import TimeSeriesSplit
 
+# 检查是否有可用的GPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
+
 def main():
     os.makedirs(Config.PLOTS_DIR, exist_ok=True)
     os.makedirs(Config.FEATURE_WEIGHTS_DIR, exist_ok=True)
@@ -23,6 +27,8 @@ def main():
     X_sequences, y_sequences, X_discrete, sequence_dates = DataPrepared.load_and_preprocess_data()
     dates = pd.Series(pd.to_datetime(sequence_dates))
     y_sequences = y_sequences.values
+    
+    
     
     # 用于存储所有预测结果
     all_predictions = []
@@ -116,11 +122,10 @@ def main():
             
             # 检查测试集是否为空
             if len(X_test) == 0:
-                
                 continue
             
-            X_test_tensor = torch.FloatTensor(X_test)
-            y_test_pred = model(X_test_tensor).numpy()
+            X_test_tensor = torch.FloatTensor(X_test).to(device)
+            y_test_pred = model(X_test_tensor).cpu().numpy()
             y_test_pred = y_test_pred.reshape(-1)  # 确保是1维数组
             y_test_pred = (y_test_pred > 0.5).astype(int)  # 将概率转换为0/1预测
             

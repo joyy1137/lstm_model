@@ -76,8 +76,8 @@ class NeuralNetworkTrainer:
         """训练单个模型并返回验证集性能"""
         # 创建数据加载器
         train_dataset = TensorDataset(
-            torch.FloatTensor(X_train), 
-            torch.FloatTensor(y_train).reshape(-1, 1)
+            torch.FloatTensor(X_train).to(self.device), 
+            torch.FloatTensor(y_train).reshape(-1, 1).to(self.device)
         )
         train_loader = DataLoader(
             train_dataset, 
@@ -86,8 +86,8 @@ class NeuralNetworkTrainer:
         )
         
         val_dataset = TensorDataset(
-            torch.FloatTensor(X_val), 
-            torch.FloatTensor(y_val).reshape(-1, 1)
+            torch.FloatTensor(X_val).to(self.device), 
+            torch.FloatTensor(y_val).reshape(-1, 1).to(self.device)
         )
         val_loader = DataLoader(
             val_dataset, 
@@ -305,7 +305,15 @@ class NeuralNetworkTrainer:
         return self.model
     
     def save_model(self, model, path):
+        """保存模型"""
         torch.save(model.state_dict(), path)
+        
+    def load_model(self, path):
+        """加载模型"""
+        model = self.model
+        model.load_state_dict(torch.load(path, map_location=self.device))
+        model.to(self.device)
+        return model
     
     def plot_all_models_curves(self):
         """Plot accuracy and loss curves for all trained models on separate graphs"""
