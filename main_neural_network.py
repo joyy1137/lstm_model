@@ -90,54 +90,88 @@ def main():
         
         # 使用TimeSeriesSplit进行训练集和验证集的划分
         tscv = TimeSeriesSplit(n_splits=Config.n_splits)
-        for train_idx, val_idx in tscv.split(X_train_full):
+        fold_predictions = []
+        fold_models = []
+        best_val_acc = 0
+        best_fold = 1
+        
+        print(f"\n开始 {Config.n_splits} 折交叉验证训练...")
+        for fold, (train_idx, val_idx) in enumerate(tscv.split(X_train_full), 1):
+            print(f"\n训练第 {fold} 折...")
             X_train = X_train_full[train_idx]
             y_train = y_train_full[train_idx]
             X_val = X_train_full[val_idx]
             y_val = y_train_full[val_idx]
-            break  # 只使用第一个划分，因为我们在循环中训练模型
-        
-    
-        
-        # 训练模型
-        print(f"\nTraining model for {date_key}...")
-        model = trainer.train_model(
-            X_train, y_train,
-            X_val, y_val,  # 使用验证集而不是测试集
-            discrete_features_train=None,
-            discrete_features_val=None,
-            use_grid_search=True,
-            config_name=f"model_{date_key}"
-        )
-        
-        # 保存模型
-        model_path = os.path.join(Config.MODELS_DIR, f'model_{date_key}.path')
-        trainer.save_model(model, model_path)
-        
-        # 进行预测
-        model.eval()
-        with torch.no_grad():
-            # 检查测试集是否为空
-            if len(X_test) == 0:
-                continue
             
-            # 将测试数据移动到正确的设备上
-            X_test_tensor = torch.FloatTensor(X_test).to(device)
-            y_test_tensor = torch.FloatTensor(y_test).to(device)
+            # 训练模型
+            model = trainer.train_model(
+                X_train, y_train,
+                X_val, y_val,
+                discrete_features_train=None,
+                discrete_features_val=None,
+                use_grid_search=True,
+                config_name=f"model_{date_key}_fold_{fold}"
+            )
             
-            # 使用训练好的模型进行预测
-            model, _ = trainer.get_trained_model_and_scaler()
-            model.to(device)  # 确保模型在正确的设备上
+            # 保存模型
+            model_path = os.path.join(Config.MODELS_DIR, f'model_{date_key}_fold_{fold}.path')
+            trainer.save_model(model, model_path)
             
-            y_test_pred = model(X_test_tensor)
-            y_test_pred = torch.sigmoid(y_test_pred)
-            y_test_pred = y_test_pred.cpu().numpy()
-            y_test_pred = y_test_pred.reshape(-1)  # 确保是1维数组
-            y_test_pred = (y_test_pred > 0.5).astype(int)  
+            # 计算当前fold的验证集准确率
+            model.eval()
+            with torch.no_grad():
+                X_val_tensor = torch.FloatTensor(X_val).to(device)
+                y_val_tensor = torch.FloatTensor(y_val).to(device)
+                val_pred = model(X_val_tensor)
+                val_pred = torch.sigmoid(val_pred)
+                val_pred = (val_pred > 0.5).cpu().numpy()
+                val_acc = np.mean(val_pred == y_val)
+                
+                # 更新最佳fold
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
+                    best_fold = fold
+                    # 只保存最佳fold的历史记录
+                    trainer.model_histories[f"model_{date_key}"] = trainer.model_histories[f"model_{date_key}_fold_{fold}"]
+            
+            # 进行测试集预测
+            with torch.no_grad():
+                # 检查测试集是否为空
+                if len(X_test) == 0:
+                    continue
+                
+                # 将测试数据移动到正确的设备上
+                X_test_tensor = torch.FloatTensor(X_test).to(device)
+                y_test_tensor = torch.FloatTensor(y_test).to(device)
+                
+                # 使用训练好的模型进行预测
+                model.to(device)  # 确保模型在正确的设备上
+                
+                y_test_pred = model(X_test_tensor)
+                y_test_pred = torch.sigmoid(y_test_pred)
+                y_test_pred = y_test_pred.cpu().numpy()
+                y_test_pred = y_test_pred.reshape(-1)  # 确保是1维数组
+                y_test_pred = (y_test_pred > 0.5).astype(int)
+                
+                fold_predictions.append(y_test_pred)
+                fold_models.append(model)
+        
+        print(f"\n最佳验证集准确率: {best_val_acc:.4f} (第 {best_fold} 折)")
+        
+        # 对所有fold的预测结果进行投票
+        if fold_predictions:
+            # 将预测结果转换为numpy数组
+            fold_predictions = np.array(fold_predictions)
+            # 使用多数投票
+            final_predictions = np.apply_along_axis(
+                lambda x: np.argmax(np.bincount(x)), 
+                axis=0, 
+                arr=fold_predictions
+            )
             
             # 收集预测结果
-            all_predictions.extend(y_test_pred)
-            all_test_dates.extend(dates[test_mask].values)  
+            all_predictions.extend(final_predictions)
+            all_test_dates.extend(dates[test_mask].values)
             all_test_values.extend(y_test)
     
     # 绘制所有模型的准确率和损失曲线

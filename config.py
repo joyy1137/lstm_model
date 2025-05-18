@@ -3,6 +3,8 @@ import yaml
 import pandas as pd
 from datetime import datetime
 
+
+
 # Load parameters from YAML file
 with open('config/parameters.yml', 'r', encoding='utf-8') as file:
     parameters = yaml.safe_load(file)
@@ -63,7 +65,7 @@ class Config:
     INDEX_RETURN_PATH = paths['data']['index_return_path']
     CHINESE_VALUATION_DATE_PATH = paths['data']['chinese_valuation_date_path']
     OUTPUT_PATH = paths['data']['output_path']
-    LOG_DIR = paths['data']['log_dir']
+   
     
     # Backtesting parameters
     BACKTESTING_COST = parameters['backtesting']['cost']

@@ -11,6 +11,19 @@ from config import Config
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import TimeSeriesSplit
 from itertools import product
+import random
+
+def set_seed(seed):
+    """设置所有随机种子以确保可重复性"""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        # 设置 CUDA 的确定性选项
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
 class LSTMNetwork(nn.Module):
     def __init__(self, input_size, hidden_size=64, num_layers=1, dropout=0.1):
@@ -63,10 +76,7 @@ class NeuralNetworkTrainer:
         self.model_histories = {}  # Dictionary to store histories of different models
         self.random_state = random_state
         # 设置随机种子
-        torch.manual_seed(random_state)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed(random_state)
-        np.random.seed(random_state)
+        set_seed(random_state)
     
     def get_trained_model_and_scaler(self):
         """返回训练好的模型"""
@@ -74,6 +84,9 @@ class NeuralNetworkTrainer:
     
     def train_single_model(self, X_train, y_train, X_val, y_val, params, config_name):
         """训练单个模型并返回验证集性能"""
+        # 确保每次训练都使用相同的随机种子
+        set_seed(self.random_state)
+        
         # 创建数据加载器
         train_dataset = TensorDataset(
             torch.FloatTensor(X_train).to(self.device), 
@@ -82,7 +95,7 @@ class NeuralNetworkTrainer:
         train_loader = DataLoader(
             train_dataset, 
             batch_size=params['batch_size'], 
-            shuffle=False
+            shuffle=False  # 时间序列数据不打乱
         )
         
         val_dataset = TensorDataset(
@@ -92,7 +105,7 @@ class NeuralNetworkTrainer:
         val_loader = DataLoader(
             val_dataset, 
             batch_size=params['batch_size'], 
-            shuffle=False
+            shuffle=False  # 时间序列数据不打乱
         )
         
         # 初始化模型
@@ -104,10 +117,12 @@ class NeuralNetworkTrainer:
             dropout=params['dropout']
         ).to(self.device)
         
-        # 初始化权重
+        # 使用固定的初始化方法
         for name, param in model.named_parameters():
             if 'weight' in name:
                 nn.init.xavier_uniform_(param, gain=nn.init.calculate_gain('relu'))
+            elif 'bias' in name:
+                nn.init.constant_(param, 0.0)
         
         # 定义损失函数和优化器
         criterion = nn.BCELoss()
@@ -142,7 +157,7 @@ class NeuralNetworkTrainer:
             for batch_X, batch_y in train_loader:
                 batch_X, batch_y = batch_X.to(self.device), batch_y.to(self.device)
                 
-                # 数据增强
+                # 数据增强（使用固定的随机种子）
                 if np.random.random() < Config.augmentation_parameters['augmentation_prob']:
                     # 添加高斯噪声
                     noise = torch.randn_like(batch_X) * Config.augmentation_parameters['noise_scale']
@@ -321,11 +336,30 @@ class NeuralNetworkTrainer:
             print("No model histories available to plot")
             return
         
+        # 获取所有模型名称（不包含fold编号）并排序
+        model_names = sorted(set([name.split('_fold_')[0] for name in self.model_histories.keys()]))
+        
         # Plot accuracy for all models
         plt.figure(figsize=(15, 6))
         plt.subplot(1, 2, 1)
-        for model_name, history in self.model_histories.items():
-            plt.plot(history['train_acc'], label=f'{model_name}', alpha=0.7)
+        for model_name in model_names:
+            # 获取该模型所有fold的历史记录
+            fold_histories = {k: v for k, v in self.model_histories.items() if k.startswith(model_name)}
+            if not fold_histories:
+                continue
+                
+            # 找出最佳fold
+            best_fold = None
+            best_val_acc = 0
+            for fold_name, history in fold_histories.items():
+                if history['val_acc'] and max(history['val_acc']) > best_val_acc:
+                    best_val_acc = max(history['val_acc'])
+                    best_fold = fold_name
+            
+            if best_fold:
+                history = fold_histories[best_fold]
+                plt.plot(history['train_acc'], label=f'{model_name}', alpha=0.7)
+        
         plt.title('Training Accuracy Comparison')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
@@ -333,9 +367,25 @@ class NeuralNetworkTrainer:
         plt.grid(True)
         
         plt.subplot(1, 2, 2)
-        for model_name, history in self.model_histories.items():
-            if any(x is not None for x in history['val_acc']):
-                plt.plot(history['val_acc'], label=f'{model_name}', alpha=0.7)
+        for model_name in model_names:
+            # 获取该模型所有fold的历史记录
+            fold_histories = {k: v for k, v in self.model_histories.items() if k.startswith(model_name)}
+            if not fold_histories:
+                continue
+                
+            # 找出最佳fold
+            best_fold = None
+            best_val_acc = 0
+            for fold_name, history in fold_histories.items():
+                if history['val_acc'] and max(history['val_acc']) > best_val_acc:
+                    best_val_acc = max(history['val_acc'])
+                    best_fold = fold_name
+            
+            if best_fold:
+                history = fold_histories[best_fold]
+                if any(x is not None for x in history['val_acc']):
+                    plt.plot(history['val_acc'], label=f'{model_name}', alpha=0.7)
+        
         plt.title('Validation Accuracy Comparison')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
@@ -349,8 +399,24 @@ class NeuralNetworkTrainer:
         # Plot loss for all models
         plt.figure(figsize=(15, 6))
         plt.subplot(1, 2, 1)
-        for model_name, history in self.model_histories.items():
-            plt.plot(history['train_loss'], label=f'{model_name}', alpha=0.7)
+        for model_name in model_names:
+            # 获取该模型所有fold的历史记录
+            fold_histories = {k: v for k, v in self.model_histories.items() if k.startswith(model_name)}
+            if not fold_histories:
+                continue
+                
+            # 找出最佳fold
+            best_fold = None
+            best_val_acc = 0
+            for fold_name, history in fold_histories.items():
+                if history['val_acc'] and max(history['val_acc']) > best_val_acc:
+                    best_val_acc = max(history['val_acc'])
+                    best_fold = fold_name
+            
+            if best_fold:
+                history = fold_histories[best_fold]
+                plt.plot(history['train_loss'], label=f'{model_name}', alpha=0.7)
+        
         plt.title('Training Loss Comparison')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
@@ -358,9 +424,25 @@ class NeuralNetworkTrainer:
         plt.grid(True)
         
         plt.subplot(1, 2, 2)
-        for model_name, history in self.model_histories.items():
-            if any(x is not None for x in history['val_loss']):
-                plt.plot(history['val_loss'], label=f'{model_name}', alpha=0.7)
+        for model_name in model_names:
+            # 获取该模型所有fold的历史记录
+            fold_histories = {k: v for k, v in self.model_histories.items() if k.startswith(model_name)}
+            if not fold_histories:
+                continue
+                
+            # 找出最佳fold
+            best_fold = None
+            best_val_acc = 0
+            for fold_name, history in fold_histories.items():
+                if history['val_acc'] and max(history['val_acc']) > best_val_acc:
+                    best_val_acc = max(history['val_acc'])
+                    best_fold = fold_name
+            
+            if best_fold:
+                history = fold_histories[best_fold]
+                if any(x is not None for x in history['val_loss']):
+                    plt.plot(history['val_loss'], label=f'{model_name}', alpha=0.7)
+        
         plt.title('Validation Loss Comparison')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')

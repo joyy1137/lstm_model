@@ -1,4 +1,4 @@
-main_folder: "/Users/fy324/desktop/lstm_model"
+main_folder: "D:/lstm_model/lstm"
 
 directories:
   model_dir: "{main_folder}/models"
@@ -19,11 +19,11 @@ signals:
   current_signal: "model1" #回测文件夹命名
 
 data:
-  combine_path: "/Users/fy324/desktop/data/combine/*.csv"
-  raw_data_path: "/Users/fy324/desktop/data/raw_signal_data/*.csv"
-  index_return_path: "/Users/fy324/OneDrive/Data_prepared_test/data_timeSeries/index_return.csv"
-  chinese_valuation_date_path: "/Users/fy324/OneDrive/Data_prepared_test/data_other/chinese_valuation_date.xlsx"
-  output_path: "/Users/fy324/desktop/lstm_model/output"
-  log_dir: "/Users/fy324/desktop/lstm_model/logs"
+  
+  raw_data_path: "D:/lstm_model/data/raw_signal_data/*.csv"
+  combine_path: "D:/lstm_model/data/combine/*.csv"
+  index_return_path: "D:/OneDrive/Data_prepared_test/data_timeSeries/index_return.csv"
+  chinese_valuation_date_path: "D:/OneDrive/Data_prepared_test/data_other/chinese_valuation_date.xlsx"
+  output_path: "D:/lstm_model/output"
 
 

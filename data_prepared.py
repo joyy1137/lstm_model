@@ -33,12 +33,12 @@ class DataPrepared:
             columns=df_raw.columns
         )
         
-        pca = PCA(n_components=6)
+        pca = PCA(n_components=7)
         raw_pca = pca.fit_transform(raw_scaled_df)
         raw_pca_df = pd.DataFrame(
             raw_pca,
             index=df_raw.index,
-            columns=[f'pca_{i+1}' for i in range(6)]
+            columns=[f'pca_{i+1}' for i in range(7)]
         )
         
         feature_files = glob.glob(Config.COMBINE_PATH)

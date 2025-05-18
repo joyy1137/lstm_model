@@ -9,38 +9,43 @@ n_splits: 3  # 时间序列交叉验证的折数
 # 模型架构参数
 model:
   architecture:
-    layers:
-      - size: 256
-        activation: "ReLU"
-        dropout: 0.3
-      - size: 128
-        activation: "ReLU"
-        dropout: 0.2
+    lstm_layers:
       - size: 64
-        activation: "ReLU"
+        return_sequences: True
+        dropout: 0.3
+      - size: 32
+        return_sequences: False
         dropout: 0.2
+    dense_layers:
+      - size: 32
+        activation: "ReLU"
       - size: 1
         activation: "Sigmoid"
-        dropout: 0.0
+
+
+
+
+
+
 
 # 数据参数
 data:
-  sequence_length: 50  # 用于时间序列预测的序列长度
   batch_size: 64      # 默认批次大小
   random_state: 42    # 数据划分的随机种子
+  sequence_length: 60
 
 # 训练参数
 training:
   num_epochs: 100     # 最大训练轮数
   weight_decay: 0.001  # L2正则化系数
-  patience: 20       # 早停耐心值
+  patience: 10       # 早停耐心值
   max_norm: 3.0       # 梯度裁剪的最大范数
 
 # 学习率调度器参数
 scheduler:
   mode: 'min'         # 监控指标的模式（最小化）
   factor: 0.5         # 学习率衰减因子
-  patience: 10        # 学习率调整的耐心值
+  patience: 5        # 学习率调整的耐心值
   min_lr: 0.0001      # 最小学习率
 
 # 数据增强参数
@@ -52,25 +57,26 @@ augmentation:
 
 # 网格搜索参数
 param_grid:
+ 
   hidden_size:
-    mode: "fixed"  # 可选值: "fixed" 或 "grid"
-    values: [128,256]  # 当 mode 为 "grid" 时使用
+    mode: "grid"  # 可选值: "fixed" 或 "grid"
+    values: [32,64,128]  # 当 mode 为 "grid" 时使用
     fixed_value: 128  # 当 mode 为 "fixed" 时使用
   num_layers:
-    mode: "fixed"
+    mode: "grid"
     values: [1, 2,3]
     fixed_value: 2
   dropout:
-    mode: "fixed"
-    values: [0.3, 0.4,0.5]
+    mode: "grid"
+    values: [0.2,0.3, 0.4,0.5]
     fixed_value: 0.3
   learning_rate:
-    mode: "fixed"
-    values: [0.0005, 0.001]  # 扩展了学习率搜索范围
+    mode: "grid"
+    values: [ 0.0005, 0.001]
     fixed_value: 0.001
   batch_size:
-    mode: "fixed"
-    values: [64,96]
+    mode: "grid"
+    values: [32, 64]
     fixed_value: 64
 
 # 训练和测试日期范围
