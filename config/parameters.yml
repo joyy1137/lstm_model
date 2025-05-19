@@ -10,20 +10,17 @@ n_splits: 3  # 时间序列交叉验证的折数
 model:
   architecture:
     lstm_layers:
-      - size: 64
+      - size: 32
         return_sequences: True
-        dropout: 0.3
-      - size: 32
+        dropout: 0.35
+      - size: 16
         return_sequences: False
-        dropout: 0.2
+        dropout: 0.3
     dense_layers:
-      - size: 32
+      - size: 16
         activation: "ReLU"
       - size: 1
         activation: "Sigmoid"
-
-
-
 
 
 
@@ -37,46 +34,46 @@ data:
 # 训练参数
 training:
   num_epochs: 100     # 最大训练轮数
-  weight_decay: 0.001  # L2正则化系数
-  patience: 10       # 早停耐心值
-  max_norm: 3.0       # 梯度裁剪的最大范数
+  weight_decay: 0.0003  # L2正则化系数
+  patience: 8       # 早停耐心值
+  max_norm: 2.0       # 梯度裁剪的最大范数
 
 # 学习率调度器参数
 scheduler:
   mode: 'min'         # 监控指标的模式（最小化）
   factor: 0.5         # 学习率衰减因子
-  patience: 5        # 学习率调整的耐心值
-  min_lr: 0.0001      # 最小学习率
+  patience: 3        # 学习率调整的耐心值
+  min_lr: 1e-5      # 最小学习率
 
 # 数据增强参数
 augmentation:
-  noise_scale: 0.01   # 添加噪声的标准差
+  noise_scale: 0.02   # 添加噪声的标准差
   scale_mean: 1.0     # 缩放因子的均值
-  scale_std: 0.1      # 缩放因子的标准差
-  augmentation_prob: 0.5  # 应用数据增强的概率
+  scale_std: 0.2      # 缩放因子的标准差
+  augmentation_prob: 0.9  # 应用数据增强的概率
 
 # 网格搜索参数
 param_grid:
  
   hidden_size:
     mode: "grid"  # 可选值: "fixed" 或 "grid"
-    values: [32,64,128]  # 当 mode 为 "grid" 时使用
+    values: [32]  # 当 mode 为 "grid" 时使用
     fixed_value: 128  # 当 mode 为 "fixed" 时使用
   num_layers:
     mode: "grid"
-    values: [1, 2,3]
+    values: [2]
     fixed_value: 2
   dropout:
     mode: "grid"
-    values: [0.2,0.3, 0.4,0.5]
+    values: [0.3, 0.35, 0.4]
     fixed_value: 0.3
   learning_rate:
     mode: "grid"
-    values: [ 0.0005, 0.001]
+    values: [0.0003, 0.0004, 0.0005]
     fixed_value: 0.001
   batch_size:
     mode: "grid"
-    values: [32, 64]
+    values: [64]
     fixed_value: 64
 
 # 训练和测试日期范围

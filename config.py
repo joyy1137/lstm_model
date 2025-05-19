@@ -2,6 +2,7 @@ import os
 import yaml
 import pandas as pd
 from datetime import datetime
+from sklearn.preprocessing import MinMaxScaler
 
 
 
@@ -91,10 +92,10 @@ class Config:
     @classmethod
     def get_scaler(cls, X):
         """Get scaler for real features"""
-        from sklearn.preprocessing import StandardScaler
+        
         if X.empty or X.shape[1] == 0:  # Handle empty features
             return None
-        scaler = StandardScaler()
+        scaler = MinMaxScaler()
         scaler.fit(X)
         return scaler
 
