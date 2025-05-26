@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 import glob
 from config import Config
 
@@ -22,23 +21,19 @@ class DataPrepared:
         # 读取文件
         raw_feature = glob.glob(Config.RAW_FEATURE_PATH)
         df_raw = pd.concat([pd.read_csv(f) for f in raw_feature])
+        df_raw = df_raw.drop(['high', 'close','return','K_9_3','D_9_3','J_9_3','MACD_h','RSI',
+                              'ma_90','volume_sum','volume_difference','FinanceDifference',
+                              'momentum_60'], axis=1)
         df_raw['valuation_date'] = pd.to_datetime(df_raw['valuation_date'])
         df_raw = df_raw.set_index('valuation_date')
         
+        # 对原始特征进行标准化
         scaler = MinMaxScaler()
         raw_scaled = scaler.fit_transform(df_raw)
         raw_scaled_df = pd.DataFrame(
             raw_scaled,
             index=df_raw.index,
             columns=df_raw.columns
-        )
-        
-        pca = PCA(n_components=7)
-        raw_pca = pca.fit_transform(raw_scaled_df)
-        raw_pca_df = pd.DataFrame(
-            raw_pca,
-            index=df_raw.index,
-            columns=[f'pca_{i+1}' for i in range(7)]
         )
         
         feature_files = glob.glob(Config.COMBINE_PATH)
@@ -53,27 +48,16 @@ class DataPrepared:
         if missing_discrete:
             raise ValueError(f"Missing discrete features: {missing_discrete}")
         
-        missing_real = [f for f in real_features if f not in raw_pca_df.columns]
+        missing_real = [f for f in real_features if f not in raw_scaled_df.columns]
         if missing_real:
             raise ValueError(f"Missing real features: {missing_real}")
         
         # 只选择配置文件中定义的特征
         df_combined = df_combined[discrete_features]
-        raw_pca_df = raw_pca_df[real_features]
+        raw_scaled_df = raw_scaled_df[real_features]
         
-        # 对 real_features 进行标准化
-        real_scaler = MinMaxScaler()
-        real_scaled = real_scaler.fit_transform(raw_pca_df)
-        raw_pca_df = pd.DataFrame(
-            real_scaled,
-            index=raw_pca_df.index,
-            columns=raw_pca_df.columns
-        )
-        raw_pca_df=raw_pca_df.shift(1)
-        raw_pca_df.dropna(inplace=True)
-        
-        # 合并 PCA 后的 raw_feature 和 feature_files
-        df = pd.merge(df_combined, raw_pca_df, left_index=True, right_index=True, how='inner')
+        # 合并原始特征和离散特征
+        df = pd.merge(df_combined, raw_scaled_df, left_index=True, right_index=True, how='inner')
         
         # 读取目标变量数据
         y = pd.read_csv(Config.INDEX_RETURN_PATH, encoding='gbk')

@@ -32,13 +32,20 @@ features:
       
     
     real_features: 
-      - pca_1
-      - pca_2
-      - pca_3
-      - pca_4
-      - pca_5
-      - pca_6
-      - pca_7
+      - open
+      - BBM_20_1.5
+      - MACD
+      - MACD_s
+      - ma_5
+      - ma_30
+      - hs300_volume_std
+      - zz2000_volume_std
+      - relative_volume_std
+      - hs300_return_std
+      - zz2000_return_std
+      - relative_return_std
+      - Finance
+      - momentum_5
       
    
      

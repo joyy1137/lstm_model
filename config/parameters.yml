@@ -3,7 +3,7 @@ backtesting:
   cost: 0.00085  # 交易成本
 
 # 随机种子和交叉验证参数
-random_state: 42
+random_state: 1
 n_splits: 3  # 时间序列交叉验证的折数
 
 # 模型架构参数
@@ -28,7 +28,7 @@ model:
 # 数据参数
 data:
   batch_size: 64      # 默认批次大小
-  random_state: 42    # 数据划分的随机种子
+  random_state: 1    # 数据划分的随机种子
   sequence_length: 60
 
 # 训练参数
@@ -57,11 +57,11 @@ param_grid:
  
   hidden_size:
     mode: "grid"  # 可选值: "fixed" 或 "grid"
-    values: [32]  # 当 mode 为 "grid" 时使用
+    values: [32,64]  # 当 mode 为 "grid" 时使用
     fixed_value: 128  # 当 mode 为 "fixed" 时使用
   num_layers:
     mode: "grid"
-    values: [2]
+    values: [1,2]
     fixed_value: 2
   dropout:
     mode: "grid"
@@ -73,7 +73,7 @@ param_grid:
     fixed_value: 0.001
   batch_size:
     mode: "grid"
-    values: [64]
+    values: [32,64]
     fixed_value: 64
 
 # 训练和测试日期范围

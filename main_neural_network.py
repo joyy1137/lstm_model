@@ -16,6 +16,34 @@ from sklearn.model_selection import TimeSeriesSplit
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
+def shuffle_by_sequence_window(X, y, sequence_length):
+    n_samples = len(X)
+    n_windows = n_samples // sequence_length
+    if n_windows == 0:
+        return X, y
+    
+    # 创建窗口索引
+    window_indices = np.arange(n_windows)
+    np.random.shuffle(window_indices)
+    
+    # 重新排列数据
+    shuffled_X = []
+    shuffled_y = []
+    
+    for window_idx in window_indices:
+        start_idx = window_idx * sequence_length
+        end_idx = start_idx + sequence_length
+        shuffled_X.append(X[start_idx:end_idx])
+        shuffled_y.append(y[start_idx:end_idx])
+    
+    # 处理剩余的数据（如果有的话）
+    remaining_start = n_windows * sequence_length
+    if remaining_start < n_samples:
+        shuffled_X.append(X[remaining_start:])
+        shuffled_y.append(y[remaining_start:])
+    
+    return np.concatenate(shuffled_X), np.concatenate(shuffled_y)
+
 def main():
     os.makedirs(Config.PLOTS_DIR, exist_ok=True)
     os.makedirs(Config.FEATURE_WEIGHTS_DIR, exist_ok=True)
@@ -102,6 +130,9 @@ def main():
             y_train = y_train_full[train_idx]
             X_val = X_train_full[val_idx]
             y_val = y_train_full[val_idx]
+            
+            # 对训练集按照sequence_length进行打乱
+            X_train, y_train = shuffle_by_sequence_window(X_train, y_train, Config.sequence_length)
             
             # 训练模型
             model = trainer.train_model(
