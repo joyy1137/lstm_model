@@ -129,7 +129,7 @@ class NeuralNetworkTrainer:
         optimizer = optim.Adam(
             model.parameters(), 
             lr=params['learning_rate'],
-            weight_decay=float(Config.training_parameters['weight_decay'])
+            weight_decay=float(params['weight_decay'])
         )
         
         # 添加学习率调度器
@@ -180,7 +180,7 @@ class NeuralNetworkTrainer:
                 # 梯度裁剪
                 torch.nn.utils.clip_grad_norm_(
                     model.parameters(), 
-                    float(Config.training_parameters['max_norm'])
+                    float(params['max_norm'])
                 )
                 
                 optimizer.step()

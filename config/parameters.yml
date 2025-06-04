@@ -34,9 +34,8 @@ data:
 # 训练参数
 training:
   num_epochs: 100     # 最大训练轮数
-  weight_decay: 0.0003  # L2正则化系数
-  patience: 8       # 早停耐心值
-  max_norm: 2.0       # 梯度裁剪的最大范数
+  patience: 12       # 早停耐心值
+ 
 
 # 学习率调度器参数
 scheduler:
@@ -47,10 +46,10 @@ scheduler:
 
 # 数据增强参数
 augmentation:
-  noise_scale: 0.02   # 添加噪声的标准差
+  noise_scale: 0.03   # 添加噪声的标准差
   scale_mean: 1.0     # 缩放因子的均值
-  scale_std: 0.2      # 缩放因子的标准差
-  augmentation_prob: 0.9  # 应用数据增强的概率
+  scale_std: 0.3      # 缩放因子的标准差
+  augmentation_prob: 0.95  # 应用数据增强的概率
 
 # 网格搜索参数
 param_grid:
@@ -65,16 +64,22 @@ param_grid:
     fixed_value: 2
   dropout:
     mode: "grid"
-    values: [0.3, 0.35, 0.4]
+    values: [0.4, 0.5]
     fixed_value: 0.3
   learning_rate:
     mode: "grid"
-    values: [0.0003, 0.0004, 0.0005]
+    values: [0.0001, 0.0002, 0.0003]
     fixed_value: 0.001
   batch_size:
     mode: "grid"
     values: [32,64]
     fixed_value: 64
+  weight_decay:
+    mode: "grid"
+    values: [0.0003, 0.001]
+  max_norm:
+    mode: "grid"
+    values: [1.0, 1.5]
 
 # 训练和测试日期范围
 dates:

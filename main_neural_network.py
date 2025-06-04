@@ -184,6 +184,10 @@ def main():
                 y_test_pred = y_test_pred.reshape(-1)  # 确保是1维数组
                 y_test_pred = (y_test_pred > 0.5).astype(int)
                 
+                # 计算并打印测试集准确率
+                test_acc = np.mean(y_test_pred == y_test)
+                print(f"Fold {fold} 测试集准确率: {test_acc:.4f}")
+                
                 fold_predictions.append(y_test_pred)
                 fold_models.append(model)
         
