@@ -243,11 +243,31 @@ def main():
         print("\nNo common dates between predictions and returns data. Skipping backtesting step.")
         return
     
+
+
+    
+    # 创建对齐的Series
+    actual_series = pd.Series(all_test_values, index=all_test_dates)
+    predicted_series = pd.Series(all_predictions, index=all_test_dates)
+    
+    # 处理重复的日期，保留最后一个预测值
+    actual_series = actual_series[~actual_series.index.duplicated(keep='last')]
+    predicted_series = predicted_series[~predicted_series.index.duplicated(keep='last')]
+    
+    # 确保所有数据都使用相同的索引
+    test_results = pd.DataFrame({
+        'valuation_date': common_dates,
+        'actual': actual_series.reindex(common_dates),
+        'predicted': predicted_series.reindex(common_dates)
+    })
+   
+    print("\n预测准确率:", np.mean(test_results['actual'] == test_results['predicted']))
+    
     # 运行回测
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     run_backtesting(timestamp, 
-                   pd.Series(all_test_values, index=all_test_dates).loc[common_dates], 
-                   pd.Series(all_predictions, index=all_test_dates).loc[common_dates], 
+                   actual_series.reindex(common_dates), 
+                   predicted_series.reindex(common_dates), 
                    returns)
 
 if __name__ == "__main__":

@@ -19,11 +19,9 @@ class DataPrepared:
     def load_and_preprocess_data():
         """加载和预处理数据"""
         # 读取文件
-        raw_feature = glob.glob(Config.RAW_FEATURE_PATH)
-        df_raw = pd.concat([pd.read_csv(f) for f in raw_feature])
-        df_raw = df_raw.drop(['high', 'close','return','K_9_3','D_9_3','J_9_3','MACD_h','RSI',
-                              'ma_90','volume_sum','volume_difference','FinanceDifference',
-                              'momentum_60'], axis=1)
+        # raw_feature = glob.glob(Config.RAW_FEATURE_PATH)
+        # df_raw = pd.concat([pd.read_csv(f) for f in raw_feature])
+        df_raw=pd.read_csv(Config.RAW_FEATURE_PATH)
         df_raw['valuation_date'] = pd.to_datetime(df_raw['valuation_date'])
         df_raw = df_raw.set_index('valuation_date')
         

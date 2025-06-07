@@ -44,7 +44,6 @@ features:
       - hs300_return_std
       - zz2000_return_std
       - relative_return_std
-      - Finance
       - momentum_5
       
    

@@ -20,7 +20,7 @@ signals:
 
 data:
   
-  raw_data_path: "D:/lstm_model/data/raw_signal_data/*.csv"
+  raw_data_path: "D:/lstm_model/data/raw_timeselecting_exposure.csv"
   combine_path: "D:/lstm_model/data/combine/*.csv"
   index_return_path: "D:/OneDrive/Data_prepared_test/data_timeSeries/index_return.csv"
   chinese_valuation_date_path: "D:/OneDrive/Data_prepared_test/data_other/chinese_valuation_date.xlsx"
