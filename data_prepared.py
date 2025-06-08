@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import glob
 from config import Config
 
@@ -69,8 +69,8 @@ class DataPrepared:
         
         # 计算中证2000和沪深300的差值
         merged['zz_hs_diff'] = merged['zz2000'] - merged['hs300']
-        merged['zz_hs_diff']=merged['zz_hs_diff'].rolling(3).sum()
-        merged['zz_hs_diff']=merged['zz_hs_diff'].shift(-2)
+        # merged['zz_hs_diff']=merged['zz_hs_diff'].rolling(3).sum()
+        # merged['zz_hs_diff']=merged['zz_hs_diff'].shift(-2)
         merged=merged.dropna()
         
         # 创建目标变量：差值大于0为1（选择中证2000），小于0为0（选择沪深300）

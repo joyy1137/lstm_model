@@ -40,10 +40,15 @@ class LSTMNetwork(nn.Module):
             batch_first=True,
             dropout=dropout if num_layers > 1 else 0
         )
+      
+        
+        # 添加LayerNorm
+        self.layer_norm1 = nn.LayerNorm(hidden_size)
         
         # 全连接层
         self.fc = nn.Sequential(
             nn.Linear(hidden_size, hidden_size // 2),
+            nn.LayerNorm(hidden_size // 2),  # 添加LayerNorm
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_size // 2, 1)
@@ -62,6 +67,9 @@ class LSTMNetwork(nn.Module):
         
         # 只使用最后一个时间步的输出
         out = out[:, -1, :]
+        
+        # 应用LayerNorm
+        out = self.layer_norm1(out)
         
         # 通过全连接层
         out = self.fc(out)
@@ -95,7 +103,7 @@ class NeuralNetworkTrainer:
         train_loader = DataLoader(
             train_dataset, 
             batch_size=params['batch_size'], 
-            shuffle=False  # 时间序列数据不打乱
+            shuffle=False  
         )
         
         val_dataset = TensorDataset(
@@ -105,7 +113,7 @@ class NeuralNetworkTrainer:
         val_loader = DataLoader(
             val_dataset, 
             batch_size=params['batch_size'], 
-            shuffle=False  # 时间序列数据不打乱
+            shuffle=False  
         )
         
         # 初始化模型
@@ -119,7 +127,7 @@ class NeuralNetworkTrainer:
         
         # 使用固定的初始化方法
         for name, param in model.named_parameters():
-            if 'weight' in name:
+            if 'weight' in name and len(param.shape) >= 2:  # Only initialize weight matrices with 2 or more dimensions
                 nn.init.xavier_uniform_(param, gain=nn.init.calculate_gain('relu'))
             elif 'bias' in name:
                 nn.init.constant_(param, 0.0)

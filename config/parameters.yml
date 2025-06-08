@@ -2,3 +2,101 @@
 backtesting:
   cost: 0.00085  # 交易成本
 
+# 随机种子和交叉验证参数
+random_state: 1
+n_splits: 3 # 时间序列交叉验证的折数
+
+# 模型架构参数
+model:
+  architecture:
+    lstm_layers:
+      - size: 64
+        return_sequences: True
+        dropout: 0.4
+      - size: 32
+        return_sequences: False
+        dropout: 0.35
+    dense_layers:
+      - size: 16
+        activation: "GELU"
+      - size: 1
+        activation: "Sigmoid"
+
+# 数据参数
+data:
+  batch_size: 64      # 默认批次大小
+  random_state: 1    # 数据划分的随机种子
+  sequence_length: 50
+
+# 训练参数
+training:
+  num_epochs: 100     # 最大训练轮数
+  patience: 10       # 早停耐心值
+
+# 学习率调度器参数
+scheduler:
+  mode: 'min'         # 监控指标的模式（最小化）
+  factor: 0.5         # 学习率衰减因子
+  patience: 3        # 学习率调整的耐心值
+  min_lr: 1e-7      # 最小学习率
+
+# 数据增强参数
+augmentation:
+  noise_scale: 0.03   # 添加噪声的标准差
+  scale_mean: 1.0     # 缩放因子的均值
+  scale_std: 0.3     # 缩放因子的标准差
+  augmentation_prob: 0.95  # 应用数据增强的概率
+
+# 网格搜索参数
+param_grid:
+  hidden_size:
+    mode: "grid"  # 可选值: "fixed" 或 "grid"
+    values: [96]  # 当 mode 为 "grid" 时使用
+    fixed_value: 128  # 当 mode 为 "fixed" 时使用
+  dropout:
+    mode: "grid"
+    values: [0.30, 0.36]
+    fixed_value: 0.3
+  learning_rate:
+    mode: "grid"
+    values: [0.00005]
+    fixed_value: 0.001
+  batch_size:
+    mode: "grid"
+    values: [96]
+    fixed_value: 64
+  num_layers:
+    mode: "grid"
+    values: [2]
+    fixed_value: 2
+  weight_decay:
+    mode: "grid"
+    values: [0.00045, 0.00055]
+  max_norm:
+    mode: "grid"
+    values: [1.0]
+
+# 训练和测试日期范围
+dates:
+  dates_0:
+    train_start: "2005-07-07"
+    train_end: "2018-12-31"
+    test_start: "2019-01-01"
+    test_end: "2022-12-31"
+  dates_1:
+    train_start: "2006-01-01"
+    train_end: "2019-12-31"
+    test_start: "2020-01-01"
+    test_end: "2023-12-31"
+  dates_3:
+    train_start: "2007-01-01"
+    train_end: "2020-12-31"
+    test_start: "2021-01-01"
+    test_end: "2024-12-31"
+  dates_4:
+    train_start: "2008-01-01"
+    train_end: "2021-12-31"
+    test_start: "2022-01-01"
+    test_end: "2025-12-31"
+
+
